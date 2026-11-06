@@ -32,10 +32,12 @@ WEEK_NUM=$(date +%Y-W%V)
 
 **Daily notes**: `./40-personal/41-daily/` 하위에서 이번 주에 해당하는 파일들
 
-**Git 변경 (git repo인 경우)**:
+**이번 주에 고친 파일** (git이 아니라 파일 수정 시각으로 본다 — 참가자는 커밋을 하지 않아 git 기록에 자기 일이 안 남는다):
 ```bash
-git log --since="$WEEK_START" --name-only --pretty=format: | sort -u | grep -v '^$'
+find 00-inbox 10-projects 20-operations 30-knowledge 40-personal 50-resources \
+  -type f -mtime -7 -not -name ".DS_Store" 2>/dev/null | head -60
 ```
+워크스페이스를 받은 지 일주일이 안 됐으면 받은 파일이 섞여 나온다 — 사용자가 만든 것만 골라 본다.
 
 **활성 프로젝트**: `10-projects/` 에서 이번 주에 수정된 폴더
 

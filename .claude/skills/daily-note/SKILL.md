@@ -1,6 +1,6 @@
 ---
 name: daily-note
-description: 오늘 날짜의 Daily Note 생성 또는 열기. gws (Google Workspace CLI) 인증 시 Google Calendar 오늘 일정 포함. "오늘 daily note", "일일 노트", "daily note", "오늘 작성", "하루 기록" 등을 언급하면 자동 실행.
+description: 오늘 날짜의 Daily Note 생성 또는 열기 + 오늘 먼저 할 일 3개 고르기. gws 연결 시 Google Calendar 오늘 일정 포함. "오늘 daily note", "일일 노트", "daily note", "오늘 작성", "하루 기록", "오늘 뭐부터 하지", "오늘 우선순위", "일일 리뷰" 등을 언급하면 자동 실행.
 allowed-tools:
   - Read
   - Write
@@ -10,7 +10,7 @@ allowed-tools:
 
 # daily-note
 
-오늘 날짜의 Daily Note를 생성하거나 여는 스킬.
+오늘 날짜의 Daily Note를 생성하거나 열고, 오늘 먼저 할 일 3개를 골라 노트에 적는 스킬.
 
 ## 수행 작업
 
@@ -42,7 +42,7 @@ esac
 
 ### 3. 파일이 있으면 → 열기
 
-기존 내용 표시. 업데이트하고 싶은지 물어보기.
+기존 내용을 보여준다. 「오늘 할 일」이 비어 있으면 6단계(오늘 할 일 고르기)로 간다.
 
 ### 4. 파일이 없으면 → 템플릿으로 생성
 
@@ -54,7 +54,7 @@ esac
 
 ### 5. (선택) Google Calendar 오늘 일정 추가
 
-**도구**: `gws` (Google Workspace CLI). 설치/인증은 교육 과정에서 `gws auth login`으로 1회 세팅.
+**도구**: `gws` (Google Workspace CLI). 연결은 사용자가 원할 때 한마디로 클로드가 진행한다(`setup-workspace` 5단).
 JSON 파싱은 Python3 내장 `json` 모듈 사용 (별도 설치 불필요).
 
 ```bash
@@ -98,12 +98,30 @@ fi
 - `gws` 미설치 / 인증 실패 / Python3 미설치 → 단계 전체 스킵 (에러 메시지 X)
 - 참고: `gws calendar +agenda --today`는 오늘 일정만 반환하는 read-only 헬퍼
 
-### 6. 결과 보고
+### 6. 오늘 할 일 3개 고르기
+
+노트의 「오늘 할 일」 칸이 비어 있을 때 한다(이미 채워져 있으면 건드리지 않는다). 재료는 셋이다.
+
+1. **어제 노트**의 「내일 이어갈 것」과 체크 안 된 「오늘 할 일」 — 어제 노트가 없으면 가장 최근 노트
+2. **할 일 목록** `40-personal/46-todos/active-todos.md`의 Today·This Week (형식은 `todo` 스킬)
+3. **최근에 고친 파일** — git이 아니라 파일 수정 시각으로 본다. 참가자는 커밋을 하지 않아서 git 기록에는 자기 일이 안 남는다.
+
+```bash
+find 00-inbox 10-projects 20-operations 30-knowledge 40-personal 50-resources \
+  -type f -mtime -2 -not -path "*/41-daily/*" -not -name ".DS_Store" 2>/dev/null | head -30
+```
+
+(최근 2일 안에 고친 파일. 결과가 없어도 정상이다 — 노트와 할 일만으로 고른다. 워크스페이스를 막 받은 날은 받은 파일이 전부 여기 잡히므로, 사용자가 만든 파일로 안 보이면 이 재료는 건너뛴다.)
+
+셋을 보고 **3개까지만** 골라 「오늘 할 일」에 `- [ ]`로 적는다. 각 줄 끝에 왜 오늘인지 짧게 붙인다(예: `— 어제 초안까지 하고 멈춤`). 마감·약속이 걸린 것, 어제 이어서 하던 것, 할 일 목록의 Today 순으로 본다. 고른 뒤 사용자에게 보여주고 바꿀 게 있는지 한 번 묻는다.
+
+### 7. 결과 보고
 
 ```
 ✅ Daily Note 생성: ./40-personal/41-daily/2026-04/2026-04-24.md
    요일: 목요일
    일정: 3건 (Google Calendar에서 가져옴)
+   오늘 할 일: 3개 — ① … ② … ③ …
 ```
 
 ## 팁

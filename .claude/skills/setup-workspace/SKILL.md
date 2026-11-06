@@ -1,6 +1,6 @@
 ---
 name: setup-workspace
-description: 첫 clone 후 워크스페이스 초기 설정. CLAUDE.md 프로필 작성 + Python venv 세팅 + 선택 도구(gws/git) 안내 + 첫 daily note 생성까지 한번에 진행. "워크스페이스 세팅", "초기 설정", "setup", "setup-workspace" 등을 언급하면 자동 실행.
+description: 첫 clone 후 워크스페이스 초기 설정. CLAUDE.md 프로필 작성 + Python venv 세팅 + 선택 도구(git·Aside·gws) 점검 + 첫 daily note 생성까지 한번에 진행. "워크스페이스 세팅", "초기 설정", "setup", "setup-workspace" 등을 언급하면 자동 실행.
 allowed-tools:
   - Read
   - Write
@@ -34,7 +34,7 @@ test -f CLAUDE.md && test -d 40-personal && test -d 30-knowledge/00-wiki \
 echo "=== 시드 무결성 체크 ==="
 missing=()
 
-# 템플릿 (daily-note, weekly-synthesis, ripple이 읽음)
+# 템플릿 (daily-note·ripple이 읽음. weekly-review-template은 손으로 쓸 때의 양식)
 test -f 00-system/01-templates/daily-note-template.md   || missing+=("00-system/01-templates/daily-note-template.md")
 test -f 00-system/01-templates/weekly-review-template.md || missing+=("00-system/01-templates/weekly-review-template.md")
 test -f 00-system/01-templates/progress-template.md     || missing+=("00-system/01-templates/progress-template.md")
@@ -45,7 +45,7 @@ test -d 40-personal/42-weekly   || missing+=("40-personal/42-weekly/")
 test -d 40-personal/43-ideas    || missing+=("40-personal/43-ideas/")
 test -d 40-personal/46-todos    || missing+=("40-personal/46-todos/")
 
-# Todo 시드 (todo/todos 스킬 타깃)
+# Todo 시드 (todo 스킬 타깃)
 test -f 40-personal/46-todos/active-todos.md || missing+=("40-personal/46-todos/active-todos.md")
 
 # CLAUDE.md 프로필 마커 (3단이 이 사이만 교체한다. 절 제목이 아니라 마커로 찾는다)
@@ -116,11 +116,9 @@ _작성일: YYYY-MM-DD_
 
 **"판단 성향" 줄은 지우지 않는다.** 세팅에서 묻지 않는 항목이지만 `do-better-drive`가 이 줄을 읽는다. 섹션을 통째로 바꾸면서 이 줄을 빠뜨리면, 나중에 사용자가 채워 넣을 자리 자체가 사라진다.
 
-### 4. Python 환경 세팅 (신규)
+### 4. Python 환경 세팅
 
-위키 점검은 `.claude/skills/wiki-lint/SKILL.md`의 실행 절차로 확인한다. Python 3.9 이상·표준 라이브러리만 필요하며 위키만 쓸 때 패키지를 설치하지 않는다.
-
-**왜 필요한가**: `csv-clean`, `excel-to-csv`, `pdf-to-md` 세 스킬이 Python 스크립트를 사용함. 나중에 갑자기 에러 나는 것보다 처음에 한 번에 세팅하는 게 편하다.
+위키 점검·handoff·카톡 읽기는 Python 3.9 이상·표준 라이브러리만 쓴다. 패키지가 필요한 것은 엑셀·CSV를 다루는 일(pandas·openpyxl — 스킬 없이 Claude가 코드를 짜서 쓴다)과 `pdf-to-md`(pymupdf4llm)다.
 
 **4-1. Python 설치 확인**:
 
@@ -132,28 +130,21 @@ for c in python3 python py; do
   v=$("$c" --version 2>&1) || continue
   case "$v" in Python\ 3.*) PYBOOT="$c"; echo "Python: $v ($c)"; break ;; esac
 done
-[ -z "$PYBOOT" ] && echo "ERROR: 파이썬 3이 없습니다 (아래 설치 안내 참고)"
+[ -z "$PYBOOT" ] && echo "파이썬 3이 없습니다"
 ```
 
 `command -v`로 있는지만 보지 않는 이유: **윈도우에는 `python3`라는 이름이 있는 척하는 가짜가 기본으로 깔려 있다.** 치면 Microsoft Store 창이 열리고 파이썬은 실행되지 않는다. 실제로 `--version`을 시켜 "Python 3."이 나오는 것만 고르면 이 가짜가 걸러진다.
 
-없으면 **OS에 맞는 설치 안내**를 보여주고 이 단계를 건너뛴다:
+없으면 **사용자에게 묻고 Claude가 설치한다** (사용자에게 설치 파일을 받으라고 넘기지 않는다):
 
-```markdown
-**Mac**: `brew install python`  (Homebrew가 없으면 https://brew.sh 먼저)
-**Ubuntu·WSL**: `sudo apt install python3 python3-venv`
-**윈도우**: https://www.python.org/downloads/ 에서 설치 파일 받기
-  - 설치 첫 화면의 **"Add python.exe to PATH" 체크박스를 반드시 켠다.**
-    이걸 놓치면 설치는 되는데 Git Bash에서 파이썬을 못 찾는다 (가장 흔한 걸림돌).
-  - 설치 후 **Git Bash 창을 닫았다 새로 연다.** 열려 있던 창은 옛 PATH를 그대로 쓴다.
-```
-
-설치 뒤 다시 4-1을 돌려 `PYBOOT`가 잡히는지 확인하고 진행한다.
+- **윈도우**: `winget install --id Python.Python.3.12 -e` (관리자 권한 불필요). 끝나면 사용자에게 **"데스크탑 앱을 완전히 종료했다가 다시 열어 주세요"**라고 알린다 — 켜 둔 채 설치한 프로그램은 다시 열어야 앱이 찾는다. 다시 연 뒤 4-1을 돌린다. 그래도 가짜가 먼저 잡히면 실제 경로 `%LOCALAPPDATA%\Programs\Python\Python312\python.exe`로 부른다.
+- **Mac**: 캠프 설치 안내의 `xcode-select --install`(명령어 라인 개발자 도구)에 `python3`가 들어 있다. 없다고 나오면 그 설치가 안 끝난 것이니 먼저 마치게 한다.
+- **Ubuntu·WSL**: `sudo apt install python3 python3-venv` (비밀번호가 필요하니 사용자가 직접 친다)
 
 **4-2. venv 세팅 제안**:
 
 ```
-데이터 처리 스킬(csv-clean, excel-to-csv, pdf-to-md)을 쓰려면 Python 패키지 3개가 필요합니다.
+엑셀·CSV 정리와 PDF 변환을 하려면 Python 패키지 3개가 필요합니다.
 워크스페이스 전용 가상환경(.venv)을 지금 만들까요? (Y/n)
 (이 셋 말고도 자기 패키지를 따로 쓰는 스킬이 있습니다 — 그건 그 스킬을 처음 쓸 때
  해당 SKILL.md의 설치 안내대로 깝니다. 목록은 `.claude/skills/README.md`의 「설치가 필요한 스킬」)
@@ -169,7 +160,7 @@ fi
 
 source .claude/venv.sh
 python -m pip install --upgrade pip --quiet
-python -m pip install -r .claude/skills/csv-clean/scripts/requirements.txt -r .claude/skills/excel-to-csv/scripts/requirements.txt -r .claude/skills/pdf-to-md/scripts/requirements.txt
+python -m pip install pandas openpyxl -r .claude/skills/pdf-to-md/scripts/requirements.txt
 ```
 
 설치 완료 후 확인:
@@ -177,32 +168,25 @@ python -m pip install -r .claude/skills/csv-clean/scripts/requirements.txt -r .c
 source .claude/venv.sh && python -c "import pandas, openpyxl, pymupdf4llm; print('OK: pandas', pandas.__version__, '| openpyxl', openpyxl.__version__, '| pymupdf4llm imported')"
 ```
 
-**안내 출력**:
+**안내 출력** (사용자가 따로 할 일은 없다):
 ```
 ✓ .venv/ 생성 및 패키지 설치 완료
-
-**사용법**: 새 터미널을 열 때마다 가상환경 활성화:
-  source .claude/venv.sh
-
-이 한 줄이 Mac·Linux·윈도우(Git Bash)에서 모두 됩니다.
-가상환경 폴더 이름이 OS마다 다른 것(bin / Scripts)을 이 파일이 대신 처리합니다.
-활성화한 뒤에는 python3 가 아니라 **python** 으로 부르세요 — 윈도우 가상환경에는
-python3 라는 이름이 없습니다.
-
-Claude Code가 Python 스크립트를 호출할 때 자동으로 이 venv를 쓰려면 매 세션 시작 시
-위 명령을 한 번 실행하거나, 셸 시작 시 자동 활성화 스크립트를 설정하세요.
+파이썬이 필요한 일은 제가 이 가상환경을 켜고 실행합니다. 따로 하실 것은 없습니다.
 ```
 
-No면 "나중에 필요할 때 다시 이 스킬을 호출하거나 직접 `python -m pip install`로 설치하세요" 안내 후 다음 단계.
+Claude 쪽 규칙: 패키지를 쓰는 파이썬은 `source .claude/venv.sh` 뒤에 부르고, 켠 뒤에는 `python3`가 아니라 **`python`**으로 부른다(윈도우 가상환경에는 `python3`라는 이름이 없다).
 
-### 5. 선택 도구 안내 (설치 강제 X)
+No면 "나중에 필요할 때 말씀하시면 그때 설치합니다" 안내 후 다음 단계.
 
-**어떤 도구가 어떤 스킬을 풀어주는지** 한번에 체크하고 보여준다:
+### 5. 선택 도구 점검 (설치 강제 X)
+
+**어떤 도구가 어떤 일을 풀어주는지** 한번에 체크하고 보여준다:
 
 ```bash
 echo "=== 선택 도구 상태 ==="
-command -v git &>/dev/null && echo "✓ git: $(git --version)" || echo "✗ git: 미설치 (daily-review, weekly-synthesis 동작 제한)"
-command -v gws &>/dev/null && echo "✓ gws: $(gws --version 2>&1 | head -1)" || echo "✗ gws: 미설치 (daily-note의 Google Calendar 연동 스킵)"
+command -v git &>/dev/null && echo "✓ git: $(git --version)" || echo "✗ git: 미설치 (워크스페이스 받기·되돌리기에 씀)"
+command -v aside &>/dev/null && echo "✓ aside: 설치됨" || echo "✗ aside: 미설치 (막힌 웹페이지 열기·구글 연결에 씀 — 캠프 설치 안내 4단계)"
+command -v gws &>/dev/null && echo "✓ gws: $(gws --version 2>&1 | head -1)" || echo "✗ gws: 미설치 (daily-note의 구글 캘린더 일정, 메일·시트·드라이브 작업)"
 case "$(uname -s)" in
   Darwin)
     command -v sqlcipher &>/dev/null && echo "✓ sqlcipher: $(sqlcipher --version 2>&1 | head -1)" \
@@ -221,14 +205,16 @@ esac
 출력 후 설명:
 
 ```markdown
-**git**: 현재 워크스페이스가 git repo면 daily-review / weekly-synthesis가 변경사항을 분석해줍니다.
-  - `git clone`으로 받았으면 이미 git 저장소입니다 — 따로 할 것 없음
-  - 압축파일로 받았으면: `git init` 후 첫 커밋
+**git**: `git clone`으로 받았으면 이미 들어 있습니다 — 따로 할 것 없음
 
-**gws (Google Workspace CLI)**: daily-note가 오늘의 Google Calendar 일정을 자동으로 가져와줍니다.
-  - 설치: `npm install -g @googleworkspace/cli` (교육 과정에서 별도 안내)
-  - 인증: `gws auth login` (브라우저 OAuth)
-  - 없어도 daily-note는 정상 동작하며 일정 섹션만 비어있음
+**Aside**: 클로드가 웹사이트를 열고 읽을 때 쓰는 브라우저입니다. 막힌 페이지 열기(`web-bypass`)와 구글 연결에 씁니다.
+  - 없으면 캠프 설치 안내 「4단계: Aside 설치와 셋팅」을 마치고, 데스크탑 앱을 완전히 종료했다 다시 엽니다
+
+**gws (구글 연결)**: 오늘 노트에 캘린더 일정이 들어가고, 메일·시트·드라이브를 말로 시킬 수 있습니다.
+  - 연결은 이렇게 한마디만 하면 클로드가 설치부터 구글 인증까지 Aside로 진행합니다:
+    "gws 설치하고 구글 OAuth 연결해줘. 브라우저는 Aside 써. 계정은 내이메일@gmail.com"
+  - 약관 동의·로그인 허용은 클로드가 멈추고 눌러 달라고 합니다
+  - 없어도 daily-note는 정상 동작하며 일정 칸만 비어 있음
 
 **kakao-read (Mac·윈도우 둘 다 됩니다 — 읽는 방식이 다릅니다)**
 
@@ -242,7 +228,7 @@ esac
 - 그 외 OS(순수 리눅스)에선 자동 비활성 — 다른 스킬엔 영향 없음
 ```
 
-설치까지 자동으로 하지 않음. 사용자가 필요성 판단 후 진행.
+이 단계에서 설치·인증까지 하지는 않는다. 사용자가 원한다고 하면 그때 진행한다.
 
 ### 5-1. 저장 위치 확인 — 내 대화가 어디로 올라가는지 (중요)
 
@@ -308,7 +294,7 @@ CLAUDE.md에 Claude가 지킬 규칙이 적혀 있습니다. 그중 "항상 이�
 - **이미 채워져 있으면** 덮어쓰기 전 사용자에게 확인.
 - **프로필은 쓰이는 곳이 있는 항목만 묻는다.** 답이 Claude의 행동을 안 바꾸는 항목(취미·관심사류)은 세팅을 길게 만들 뿐이다.
 - **Python 환경은 권장, 강제 X**. 데이터 스킬 안 쓸 사람도 있음.
-- **선택 도구(git/gws)는 상태만 체크**. 자동 설치·인증은 안 함 (교육 과정에서 별도 안내되는 영역).
+- **선택 도구(git·Aside·gws)는 세팅 중엔 상태만 체크**. gws 연결은 사용자가 원할 때 한마디로 클로드가 Aside로 진행한다.
 - **저장 위치는 숨기지 않는다**. 원격이 공개(public)면 세팅을 멈추고 비공개 전환부터. 대화 원문이 어디로 가는지 사용자가 모른 채 넘어가게 하지 않는다.
 - **재실행 안전**. 이미 세팅된 항목은 스킵.
 

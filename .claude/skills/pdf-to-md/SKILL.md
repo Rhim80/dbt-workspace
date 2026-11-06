@@ -34,7 +34,7 @@ python -m pip install -r .claude/skills/pdf-to-md/scripts/requirements.txt
 # 워크스페이스 루트에서 1회 세팅
 python3 -m venv .venv        # 윈도우 Git Bash에는 python3 가 없을 수 있다 → python 또는 py
 source .claude/venv.sh
-python -m pip install -r .claude/skills/pdf-to-md/scripts/requirements.txt -r .claude/skills/csv-clean/scripts/requirements.txt -r .claude/skills/excel-to-csv/scripts/requirements.txt
+python -m pip install -r .claude/skills/pdf-to-md/scripts/requirements.txt
 ```
 
 이후 Python 쓰는 스킬은 `source .claude/venv.sh` 된 상태에서 호출 (Mac·윈도우 공통). `.venv/`는 이미 `.gitignore` 처리됨.

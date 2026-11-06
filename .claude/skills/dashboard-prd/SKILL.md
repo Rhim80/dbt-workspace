@@ -153,7 +153,7 @@ allowed-tools:
 
 **파일 분석 (자동)**:
 파일 경로가 제공되면:
-1. Excel(.xlsx/.xls)이면 먼저 /excel-to-csv로 CSV 변환 (Read는 엑셀 원본을 직접 읽지 못함)
+1. Excel(.xlsx/.xls)이면 파이썬(pandas·openpyxl)으로 열어 시트·머리글·병합 셀을 확인한다 (Read는 엑셀 원본을 직접 읽지 못함)
 2. CSV/텍스트는 Read로 직접 읽기. 대용량(수천 행 이상)은 Bash로 행 수·컬럼·샘플을 프로파일링
 3. 자동 분석 리포트 생성:
    - 총 행/컬럼 수

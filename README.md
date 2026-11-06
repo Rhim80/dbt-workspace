@@ -39,8 +39,8 @@ Claude에게:
 `setup-workspace` 스킬이 대화형으로 다음을 진행합니다:
 
 1. **프로필 작성** — CLAUDE.md의 "내 프로필" 섹션을 4개 질문으로 채움
-2. **Python 환경** — 데이터 스킬(csv-clean, excel-to-csv, pdf-to-md)용 `.venv` 생성 + 패키지 설치 (원할 때만)
-3. **선택 도구 체크** — `git`, `gws` (Google Workspace CLI) 설치 상태 확인 및 안내
+2. **Python 환경** — 엑셀·CSV 작업과 `pdf-to-md`용 `.venv` 생성 + 패키지 설치 (원할 때만)
+3. **선택 도구 체크** — `git`, Aside, `gws`(구글 연결) 설치 상태 확인 및 안내
 4. **첫 Daily Note** — 오늘의 기록 시작
 
 각 단계는 건너뛸 수 있고, 이미 세팅된 항목은 자동 스킵됩니다.
