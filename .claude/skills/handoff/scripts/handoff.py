@@ -598,7 +598,9 @@ def session_transcript() -> Path:
 
 
 # Claude Code가 사용자 말 자리에 끼워 넣는 고정 문구 — 사용자가 한 말이 아니다
-HARNESS_SAID = ("The user wants to clarify these questions.",)
+HARNESS_SAID = ("The user wants to clarify these questions.", "[Request interrupted by user")
+# 앱이 사용자 말 앞에 붙이는 안내 — 사용자가 친 글이 아니다
+REMINDER = re.compile(r"<system-reminder>.*?</system-reminder>", re.S)
 # 선택지 답을 감싸는 고정 글 — 앞머리·꼬리를 떼고 "질문"="답"만 남긴다 (모양이 둘이다)
 CHOICE_WRAP = re.compile(r"^(?:Your questions have been answered:|The user answered:)\s*"
                          r"|\s*(?:You can now continue with these answers in mind\.?|Read the answers carefully\b.*)$", re.S)
@@ -642,11 +644,16 @@ def said_records(path: Path) -> list:
             elif typ == "attachment":
                 a = d.get("attachment") or {}
                 if a.get("type") == "queued_command" and (a.get("origin") or {}).get("kind") == "human":
-                    got.append(("작업중", str(a.get("prompt", ""))))
-            elif typ == "user" and src in ("typed", "queued"):
+                    pr = a.get("prompt", "")
+                    if isinstance(pr, list):   # 데스크탑 앱은 글 조각 목록으로 준다
+                        pr = "\n".join(b.get("text", "") for b in pr if isinstance(b, dict) and b.get("type") == "text")
+                    got.append(("작업중", str(pr)))
+            elif typ == "user" and (src in ("typed", "queued")
+                                    # 데스크탑 앱(Code 탭): 친 말도 "sdk"로 온다 — 사람이 낸 것만(다른 세션이 넘긴 일은 origin이 없다)
+                                    or (src == "sdk" and (d.get("origin") or {}).get("kind") == "human")):
                 t = c if isinstance(c, str) else "\n".join(
                     b.get("text", "") for b in c or [] if isinstance(b, dict) and b.get("type") == "text")
-                got.append(("말" if src == "typed" else "작업중", t))
+                got.append(("작업중" if src == "queued" else "말", t))
             elif typ == "user" and isinstance(c, str) and "<command-name>" in c:
                 m = re.search(r"<command-name>(.*?)</command-name>", c, re.S)
                 a = re.search(r"<command-args>(.*?)</command-args>", c, re.S)
@@ -669,7 +676,7 @@ def said_records(path: Path) -> list:
                         if m:
                             got.append(("거절사유", m.group(1)))
             for kind, t in got:
-                t = t.strip()
+                t = REMINDER.sub("", t).strip()
                 if not t or _harness(t):
                     continue
                 if kind == "작업중" and any(o["글"] == t and o["ts"] and ts and abs((ts - o["ts"]).total_seconds()) <= 600 for o in out[-5:]):
@@ -994,6 +1001,19 @@ def selftest() -> int:
          [(k, t) for _, k, t in it] == [("명령", "/handoff 재개 x.md"), ("말", "1편부터 하자"), ("고름", "매번 새로 쓰기"), ("고름", '"무엇부터?"="1편".'), ("말", "장기기억이 중요해"),
                                         ("작업중", "작업 중에 친 말"), ("작업중", "흡수된 말"), ("!명령", "git status"), ("거절사유", "세 세션으로 나누자")]
          and it[1][0] == "09-26 12:06")
+    # 데스크탑 앱(Code 탭) 기록 — 친 말이 promptSource "sdk" + origin human으로 오고, 앞에 system-reminder가 붙는다
+    rem = "<system-reminder>\n앱 안내\n</system-reminder>\n\n"
+    d = tmp / "d.jsonl"
+    drecs = [{"type": "user", "promptSource": "sdk", "turnOrigin": "sdk", "timestamp": "2026-11-06T10:59:00Z", "message": {"content": "다른 세션이 넘긴 일"}},
+             {"type": "user", "promptSource": "sdk", "origin": {"kind": "human"}, "timestamp": "2026-11-06T11:00:00Z",
+              "message": {"content": [{"type": "text", "text": rem}, {"type": "text", "text": "빼기"}]}},
+             {"type": "attachment", "timestamp": "2026-11-06T11:01:00Z", "attachment": {"type": "queued_command", "origin": {"kind": "human"},
+              "prompt": [{"type": "text", "text": rem}, {"type": "text", "text": "ripple도 봐줘"}]}},
+             {"type": "user", "timestamp": "2026-11-06T11:02:00Z", "message": {"content": [{"type": "text", "text": "[Request interrupted by user]"}]}},
+             {"type": "user", "promptSource": "sdk", "origin": {"kind": "human"}, "timestamp": "2026-11-06T11:03:00Z", "message": {"content": rem}}]
+    d.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in drecs) + "\n", encoding="utf-8")
+    case("said — 데스크탑 앱: sdk+사람은 말, 다른 세션이 넘긴 것·끊김 표시·안내뿐인 말은 제외, system-reminder 떼기",
+         [(k, t) for _, k, t in said_items(d)] == [("말", "빼기"), ("작업중", "ripple도 봐줘")])
     e = tmp / "e.jsonl"
     e.write_text('{"type":"assistant"}\n', encoding="utf-8")
     try:
