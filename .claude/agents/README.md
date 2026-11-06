@@ -36,9 +36,8 @@ tools: Read, Write, Bash, ...  # 허용 도구
 
 | 에이전트 | 역할 | 호출 예시 |
 |---------|------|----------|
-| `research-worker` | 외부 웹 다중 소스 교차검증 리서치 (차단된 URL은 `web-bypass`로 재시도) | "3개 소스로 검증한 시장 조사" |
+| `research-worker` | 외부 웹 다중 소스 교차검증 리서치 (차단된 URL은 `web-bypass`로 재시도 — Aside 사용) | "3개 소스로 검증한 시장 조사" |
 | `analysis-worker` | 데이터에서 패턴 발견 → 의미 해석 → 행동 연결 (집계·비율은 python으로 직접 계산) | "이 데이터에서 패턴 찾아줘" |
-| `content-worker` | 글 작성, 문서 생성, 콘텐츠 구조화 | "이 분석으로 블로그 글 작성" |
 | `verify-worker` | 요청한 일이 요청대로 됐는지 독립된 눈으로 판정 (고치지 않음) | "제대로 했는지 확인해줘" |
 
 `verify-worker`가 있는 이유 — **일한 세션이 자기 일을 채점하면 놓친다.** 방금 판단을
@@ -51,7 +50,7 @@ tools: Read, Write, Bash, ...  # 허용 도구
 ```
 1. research-worker  → 외부 정보 수집
 2. analysis-worker  → 수집 데이터 분석
-3. content-worker   → 분석 결과로 문서 작성
+3. 메인 세션        → 분석 결과로 문서 작성
 ```
 
 `verify-worker`는 체인 밖이다 — 일이 끝난 뒤 "시킨 것이 됐나"를 따로 본다.
