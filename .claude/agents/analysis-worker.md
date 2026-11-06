@@ -3,7 +3,6 @@ name: analysis-worker
 description: 데이터 분석 워커. 데이터(정량·정성·혼합)에서 패턴·군집·이상치·추세를 발견하고 "그래서 뭘 해야 하는가"까지 연결한다. 집계·기술통계는 Bash(python·pandas)로 직접 계산한다. Examples - "이 데이터에서 패턴 찾아줘", "수집된 경쟁사 데이터 분석해줘", "설문 응답 정리·해석해줘", "3개 플랫폼 중 어떤 걸 선택해야 할지 분석해줘". 외부 정보 수집은 research-worker.
 model: opus
 disallowedTools: WebSearch, WebFetch, EnterWorktree
-skills: thinking-partner
 permissionMode: acceptEdits
 memory: user
 maxTurns: 25

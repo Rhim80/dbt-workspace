@@ -29,6 +29,7 @@ venv/
 
 # Temp / work
 00-inbox/*.tmp
+.hwpx-work/
 .playwright-mcp/
 
 # Skill cache

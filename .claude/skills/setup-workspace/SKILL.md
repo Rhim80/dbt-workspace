@@ -34,7 +34,7 @@ test -f CLAUDE.md && test -d 40-personal && test -d 30-knowledge/00-wiki \
 echo "=== 시드 무결성 체크 ==="
 missing=()
 
-# 템플릿 (daily-note·ripple이 읽음. weekly-review-template은 손으로 쓸 때의 양식)
+# 템플릿 (daily-note, weekly-synthesis, ripple이 읽음)
 test -f 00-system/01-templates/daily-note-template.md   || missing+=("00-system/01-templates/daily-note-template.md")
 test -f 00-system/01-templates/weekly-review-template.md || missing+=("00-system/01-templates/weekly-review-template.md")
 test -f 00-system/01-templates/progress-template.md     || missing+=("00-system/01-templates/progress-template.md")

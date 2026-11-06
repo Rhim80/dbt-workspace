@@ -22,17 +22,12 @@ allowed-tools:
 python -m pip install -r .claude/skills/pdf-to-md/scripts/requirements.txt
 ```
 
-또는:
-```bash
-python -m pip install -r .claude/skills/pdf-to-md/scripts/requirements.txt
-```
-
 **PEP 668 에러가 나는 경우 (Python 3.12+ / Mac Homebrew 환경)**:
 
 가장 깔끔한 방법은 워크스페이스 전용 가상환경:
 ```bash
 # 워크스페이스 루트에서 1회 세팅
-python3 -m venv .venv        # 윈도우 Git Bash에는 python3 가 없을 수 있다 → python 또는 py
+python3 -m venv .venv        # 윈도우에는 python3 가 없을 수 있다 → python 또는 py
 source .claude/venv.sh
 python -m pip install -r .claude/skills/pdf-to-md/scripts/requirements.txt
 ```

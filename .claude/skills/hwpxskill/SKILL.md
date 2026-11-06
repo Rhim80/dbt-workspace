@@ -1,5 +1,5 @@
 ---
-name: hwpx
+name: hwpxskill
 description: "한글(HWPX) 문서 생성/읽기/편집 스킬. .hwpx 파일, 한글 문서, Hancom, OWPML 관련 요청 시 사용."
 ---
 
@@ -75,19 +75,20 @@ python "$SKILL_DIR/scripts/text_extract.py" document.hwpx        # 표 포함이
 
 ```bash
 source "$VENV"
+mkdir -p .hwpx-work   # 중간 파일은 워크스페이스 안에 둔다 (/tmp는 윈도우에서 도구마다 다른 곳을 가리킨다)
 
 # 1) 레퍼런스 분석 + XML 추출
 python "$SKILL_DIR/scripts/analyze_template.py" reference.hwpx \
-  --extract-header /tmp/ref_header.xml \
-  --extract-section /tmp/ref_section.xml
+  --extract-header .hwpx-work/ref_header.xml \
+  --extract-section .hwpx-work/ref_section.xml
 
-# 2) /tmp/ref_section.xml을 복제해 /tmp/new_section0.xml 작성
+# 2) .hwpx-work/ref_section.xml을 복제해 .hwpx-work/new_section0.xml 작성
 #    (구조 유지, 텍스트/데이터만 요청에 맞게 수정)
 
 # 3) 복원 빌드
 python "$SKILL_DIR/scripts/build_hwpx.py" \
-  --header /tmp/ref_header.xml \
-  --section /tmp/new_section0.xml \
+  --header .hwpx-work/ref_header.xml \
+  --section .hwpx-work/new_section0.xml \
   --output result.hwpx
 
 # 4) 검증
@@ -241,7 +242,7 @@ python "$SKILL_DIR/scripts/build_hwpx.py" --template report --section my.xml \
 
 ```bash
 # 1. section0.xml을 임시파일로 작성
-SECTION=$(mktemp /tmp/section0_XXXX.xml)
+mkdir -p .hwpx-work && SECTION=.hwpx-work/section0_$$.xml
 cat > "$SECTION" << 'XMLEOF'
 <?xml version='1.0' encoding='UTF-8'?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"
@@ -599,14 +600,15 @@ python "$SKILL_DIR/scripts/validate.py" document.hwpx
 
 ```bash
 source "$VENV"
+mkdir -p .hwpx-work   # 중간 파일은 워크스페이스 안에 둔다
 
 # 1. 심층 분석 (구조 청사진 출력)
 python "$SKILL_DIR/scripts/analyze_template.py" reference.hwpx
 
 # 2. header.xml과 section0.xml을 추출하여 참고용으로 보관
 python "$SKILL_DIR/scripts/analyze_template.py" reference.hwpx \
-  --extract-header /tmp/ref_header.xml \
-  --extract-section /tmp/ref_section.xml
+  --extract-header .hwpx-work/ref_header.xml \
+  --extract-section .hwpx-work/ref_section.xml
 
 # 3. 분석 결과를 보고 새 section0.xml 작성
 #    - 동일한 charPrIDRef, paraPrIDRef 사용
@@ -615,8 +617,8 @@ python "$SKILL_DIR/scripts/analyze_template.py" reference.hwpx \
 
 # 4. 추출한 header.xml + 새 section0.xml로 빌드
 python "$SKILL_DIR/scripts/build_hwpx.py" \
-  --header /tmp/ref_header.xml \
-  --section /tmp/new_section0.xml \
+  --header .hwpx-work/ref_header.xml \
+  --section .hwpx-work/new_section0.xml \
   --output result.hwpx
 
 # 5. 검증
