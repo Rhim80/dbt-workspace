@@ -226,7 +226,7 @@ esac
   - 압축파일로 받았으면: `git init` 후 첫 커밋
 
 **gws (Google Workspace CLI)**: daily-note가 오늘의 Google Calendar 일정을 자동으로 가져와줍니다.
-  - 설치: `npm install -g gws-cli` (교육 과정에서 별도 안내)
+  - 설치: `npm install -g @googleworkspace/cli` (교육 과정에서 별도 안내)
   - 인증: `gws auth login` (브라우저 OAuth)
   - 없어도 daily-note는 정상 동작하며 일정 섹션만 비어있음
 
