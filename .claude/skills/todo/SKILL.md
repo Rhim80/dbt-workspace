@@ -35,6 +35,7 @@ allowed-tools:
 
 - `added`는 `date +"%Y-%m-%d %H:%M"`로 찍는다. "오래된 할 일"(담은 지 7일 넘은 것)을 가르는 기준이라 빠뜨리지 않는다.
 - 급하다는 말이 있으면 `high` → Today, 나중이라는 말이 있으면 `low` → Backlog, 그 밖은 `normal` → This Week. 애매하면 This Week에 넣고 어디 넣었는지 말한다.
+- 맨 앞 대괄호도 같은 뜻으로 읽는다 — `[urgent]`·`[high]`는 high, `[low]`는 low, 그 밖의 낱말(`[상세페이지]`)은 프로젝트 이름.
 - 프로젝트 이름이 나오면 `10-projects/`의 폴더 이름과 맞춘다.
 
 ## 끝낸 것
